@@ -64,11 +64,11 @@ const bookEvent = async (req, res) => {
     }
 
     let bookingStatus = 'active';
-    let responseMessage = "Joy muvaffaqiyatli band qilindi! Bot orqali chiptangiz yuborildi.";
+    let responseMessage = "Joy muvaffaqiyatli band qilindi!\nBot orqali chiptangiz yuborildi!";
 
     if (targetEvent.bookedCount >= targetEvent.capacity) {
       bookingStatus = 'waitlist';
-      responseMessage = "Joylar to'lgan! Siz Kutish ro'yxatiga (Waitlist) tushdingiz. Joy ochilsa xabar beramiz.";
+      responseMessage = "Joylar to'lgan!\nSiz Kutish ro'yxatiga (Waitlist) tushdingiz.\nJoy ochilsa xabar beramiz.";
     } else {
       targetEvent.bookedCount += 1;
       await targetEvent.save();
@@ -101,7 +101,7 @@ const cancelBooking = async (req, res) => {
         nextInLine.status = 'active';
         await nextInLine.save();
         event.bookedCount += 1;
-        await bot.telegram.sendMessage(nextInLine.userId.telegramChatId, `🍀 *Omad siz tomonda ekan!* 🎉\n\n*${event.title}* tadbiridan joy bo'shadi va u SIZGA taqdim etildi!\n📅 Vaqti: ${new Date(event.startTime).toLocaleString()}`, { parse_mode: 'Markdown' });
+        await bot.telegram.sendMessage(nextInLine.userId.telegramChatId, `🎉 *Omad siz tomonda ekan!* \n\n*${event.title}* tadbiridan joy bo'shadi va u SIZGA taqdim etildi!\n📅 Vaqti: ${new Date(event.startTime).toLocaleString()}`, { parse_mode: 'Markdown' });
       }
       await event.save();
     }
@@ -152,7 +152,7 @@ const removeAttendee = async (req, res) => {
         nextInLine.status = 'active';
         await nextInLine.save();
         event.bookedCount += 1;
-        await bot.telegram.sendMessage(nextInLine.userId.telegramChatId, `🍀 *Omad siz tomonda!* 🎉\n\n*${event.title}* tadbiridan joy bo'shadi!\n📅 Vaqti: ${new Date(event.startTime).toLocaleString()}`, { parse_mode: 'Markdown' });
+        await bot.telegram.sendMessage(nextInLine.userId.telegramChatId, `🎉 *Omad siz tomonda!* \n\n*${event.title}* tadbiridan joy bo'shadi!\n📅 Vaqti: ${new Date(event.startTime).toLocaleString()}`, { parse_mode: 'Markdown' });
       }
       await event.save();
       booking.status = 'cancelled';

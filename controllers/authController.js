@@ -89,7 +89,7 @@ const setPassword = async (req, res) => {
 
     await bot.telegram.sendMessage(
       user.telegramChatId,
-      `🚀 *Xush kelibsiz!* 🎉\n\nSizning hisobingiz muvaffaqiyatli faollashtirildi. Endi siz nafaqat zametkalarni boshqarishingiz, balki eng zo'r tadbirlarga birinchilardan bo'lib chipta olishingiz mumkin!\n\n🤖 _Men sizning shaxsiy yordamchingizman. Muhim eslatmalar va chiptalarni shu yerda kutib oling._`,
+      `🚀 *Xush kelibsiz!*\n\nSizning hisobingiz muvaffaqiyatli faollashtirildi.\nEndi siz nafaqat zametkalarni boshqarishingiz, balki eng zo'r tadbirlarga birinchilardan bo'lib chipta olishingiz mumkin!\n\n🤖 _Men sizning shaxsiy yordamchingizman.Muhim eslatmalar va chiptalarni shu yerda kutib oling._`,
       { parse_mode: 'Markdown' }
     );
 

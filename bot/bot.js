@@ -19,7 +19,7 @@ bot.start(async (ctx) => {
     if (existingUser) {
       // Tizimda bor foydalanuvchi uchun javob:
       return ctx.reply(
-        `Assalomu alaykum yana bir bor, *${firstName}*! 👋\n\nSiz tizimimizdan allaqachon muvaffaqiyatli ro'yxatdan o'tgansiz va profilingiz botga ulangan.\n\n🌐 Iltimos, barcha amallarni (yangi zametkalar yozish, tadbirlarga chipta olish) sayt orqali bajaring. Bot orqali esa faqat muhim bildirishnomalar va eslatmalarni qabul qilib olasiz!`,
+        `Assalomu alaykum yana bir bor!*${firstName}*! 👋\n\nSiz tizimimizdan allaqachon muvaffaqiyatli ro'yxatdan o'tgansiz va profilingiz botga ulangan.\n\n🌐 Iltimos, barcha amallarni (yangi zametkalar yozish, tadbirlarga chipta olish) sayt orqali bajaring. Bot orqali esa faqat muhim bildirishnomalar va eslatmalarni qabul qilib olasiz!`,
         {
           parse_mode: 'Markdown',
           reply_markup: { remove_keyboard: true } // Pastdagi kontakt tugmasini olib tashlaydi
@@ -29,9 +29,8 @@ bot.start(async (ctx) => {
 
     // Tizimda yo'q (yangi) foydalanuvchi uchun javob:
     ctx.reply(
-      `Assalomu alaykum, *${firstName}*!\nLoyihalar tizimining (Zametkalar va Tadbirlar) rasmiy botiga xush kelibsiz.\n\nBu bot orqali siz o'z zametkalaringiz bo'yicha muhim eslatmalarni va tadbirlar uchun elektron chiptalarni qabul qilib olasiz.\n\n⚠️ *Tizimdan to'liq foydalanish uchun:*
-1. Pastdagi tugma orqali o'z profilingizni (telefon raqamingizni) botga ulang.
-2. Saytga kirib, shu raqam orqali ro'yxatdan o'ting.\n\n_Iltimos, avval pastdagi tugmani bosing:_ 👇`,
+      `Assalomu alaykum, *${firstName}*!\n*Zametkalar va Tadbirlar* rasmiy botiga xush kelibsiz.\n\nBu bot orqali siz o'z zametkalaringiz bo'yicha muhim eslatmalarni va tadbirlar uchun elektron chiptalarni qabul qilib olasiz.\n\n⚠️ *Tizimdan to'liq foydalanish uchun:*
+Pastdagi tugma orqali o'z profilingizni (telefon raqamingizni) botga ulang.`,
       {
         parse_mode: 'Markdown',
         reply_markup: {
@@ -112,7 +111,7 @@ bot.action(/^done_(.+)$/, async (ctx) => {
 
     // Kreativ tasdiqlash xabari
     await ctx.editMessageText(
-      `🏆 *Ajoyib natija!* 🏔\n\nSiz ~${note.title}~ vazifasini muvaffaqiyatli yakunladingiz.\n\n_🌐 Saytdagi "Bajarilganlar" ro'yxati yangilandi. Faqat olg'a!_ 🚀`,
+      `🏆 *Ajoyib natija!* 🏔\n\nSiz ~${note.title}~ vazifasini muvaffaqiyatli yakunladingiz.\n\n_🌐 Saytda bu vazifa statusi bajarildiga o'zgartirildi. Faqat olg'a!_ 🚀`,
       { parse_mode: 'Markdown' }
     );
 
