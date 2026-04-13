@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kassa - Event Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-indigo-900 to-purple-800 min-h-screen text-gray-800 font-sans pb-10">
+
+    <nav class="bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <h1 class="text-2xl font-black text-indigo-700 tracking-tighter w-full md:w-auto">
+                <i class="fa-solid fa-ticket text-purple-600 mr-2"></i>EVENT<span class="text-purple-600">KASSA</span>
+            </h1>
+            
+            <div class="flex flex-1 w-full max-w-xl gap-2">
+                <div class="flex items-center bg-gray-100 rounded-lg px-3 py-2 w-full border border-gray-200">
+                    <i class="fa-solid fa-search text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Tadbir qidirish..." class="bg-transparent border-none outline-none ml-2 w-full text-sm">
+                </div>
+                <input type="date" id="dateFilter" class="bg-gray-100 rounded-lg px-3 py-2 border border-gray-200 text-sm text-gray-600 outline-none cursor-pointer">
+            </div>
+
+            <div class="flex gap-4 w-full md:w-auto justify-end">
+                <button onclick="window.location.href='/'" class="text-gray-500 hover:text-indigo-600 font-bold"><i class="fa-solid fa-house"></i></button>
+                <button onclick="openAdminModal()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold shadow hover:bg-indigo-700 transition"><i class="fa-solid fa-plus mr-1"></i> Yangi Tadbir</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 mt-10">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-black text-white mb-4">Bo'lajak Seminarlar va Tadbirlar</h2>
+            <p class="text-indigo-200 text-lg">O'zingizga qulay vaqtni tanlang va joyingizni band qiling!</p>
+        </div>
+
+        <div id="eventsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+    </main>
+
+    <div id="adminModal" class="hidden fixed inset-0 bg-black/70 flex justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 relative">
+            <button onclick="closeModal('adminModal')" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Yangi Tadbir Yaratish</h3>
+            <form id="eventForm" class="space-y-4">
+                <input type="text" id="evTitle" placeholder="Tadbir nomi" class="w-full p-3 border rounded-lg bg-gray-50" required>
+                <textarea id="evDesc" rows="2" placeholder="Tavsif" class="w-full p-3 border rounded-lg bg-gray-50"></textarea>
+                <div class="flex gap-4">
+                    <input type="datetime-local" id="evStart" class="w-full p-3 border rounded-lg bg-gray-50" required>
+                    <input type="datetime-local" id="evEnd" class="w-full p-3 border rounded-lg bg-gray-50" required>
+                </div>
+                <input type="number" id="evCapacity" placeholder="Zal sig'imi" class="w-full p-3 border rounded-lg bg-gray-50" required>
+                <button type="submit" class="w-full bg-green-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-green-700 mt-6">Yaratish</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="updateBookingModal" class="hidden fixed inset-0 bg-black/70 flex justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
+            <button onclick="closeModal('updateBookingModal')" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">Chiptangizni tahrirlash</h3>
+            <p class="text-xs text-gray-500 mb-6">Agar o'rningizga boshqa odam boradigan bo'lsa, ma'lumotlarni o'zgartirishingiz mumkin.</p>
+            <form id="updateBookingForm" class="space-y-4">
+                <input type="hidden" id="updateEventId">
+                <input type="text" id="guestName" placeholder="Mehmonning to'liq ismi" class="w-full p-3 border rounded-lg bg-gray-50" required>
+                <input type="email" id="guestEmail" placeholder="Mehmonning emaili" class="w-full p-3 border rounded-lg bg-gray-50" required>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-700">Saqlash</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="attendeesModal" class="hidden fixed inset-0 bg-black/70 flex justify-center items-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 relative max-h-[80vh] flex flex-col">
+            <button onclick="closeModal('attendeesModal')" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">Qatnashchilar Ro'yxati</h3>
+            <div id="attendeesList" class="overflow-y-auto flex-1 space-y-3">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.BackButton.show(); // Yuqorida Telegramning o'zini orqaga tugmasini ham chiqaradi
+
+        // Telefonning "Nazad" tugmasi bosilganda
+        tg.BackButton.onClick(() => {
+            window.location.href = '/'; // Dasturdan chiqib ketmay, Asosiy menyuga (index.html) qaytaradi!
+        });
+        const phone = localStorage.getItem('userPhone');
+        if (!phone) window.location.href = '/';
+        const headers = { 'Content-Type': 'application/json', 'user-phone': phone };
+
+        document.addEventListener('DOMContentLoaded', fetchEvents);
+
+        // Qidiruv va Filter Hodisalari
+        document.getElementById('searchInput').addEventListener('input', fetchEvents);
+        document.getElementById('dateFilter').addEventListener('change', fetchEvents);
+
+        async function fetchEvents() {
+            try {
+                const search = document.getElementById('searchInput').value;
+                const date = document.getElementById('dateFilter').value;
+                
+                let url = '/api/events?';
+                if (search) url += `search=${search}&`;
+                if (date) url += `date=${date}`;
+
+                const res = await fetch(url, { headers });
+                const events = await res.json();
+                renderEvents(events);
+            } catch (error) { console.error("Xatolik:", error); }
+        }
+
+        function renderEvents(events) {
+            const container = document.getElementById('eventsContainer');
+            container.innerHTML = '';
+
+            if (events.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center text-white mt-10"><i class="fa-regular fa-calendar-xmark text-6xl mb-4 opacity-50"></i><h3 class="text-2xl">Bu sanada yoki nomda tadbir topilmadi...</h3></div>`;
+                return;
+            }
+
+            events.forEach(ev => {
+                const start = new Date(ev.startTime).toLocaleString('uz-UZ', { month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                const isFull = ev.bookedCount >= ev.capacity;
+                const percent = (ev.bookedCount / ev.capacity) * 100;
+                let progressColor = percent > 80 ? 'bg-red-500' : 'bg-green-500';
+
+                container.innerHTML += `
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden hover:-translate-y-2 transition-transform duration-300 flex flex-col relative group">
+                        
+                        <div class="absolute top-2 left-2 flex gap-2 opacity-0 group-hover:opacity-100 transition z-10">
+                            <button onclick="viewAttendees('${ev._id}')" class="bg-black/60 hover:bg-black text-white p-2 rounded-lg text-xs font-bold shadow">
+                                <i class="fa-solid fa-users mr-1"></i> Ro'yxat
+                            </button>
+                            <button onclick="deleteEvent('${ev._id}')" class="bg-red-500/90 hover:bg-red-600 text-white p-2 rounded-lg text-xs font-bold shadow" title="Tadbirni butunlay o'chirish">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+
+                        <div class="bg-indigo-100 h-32 flex items-center justify-center relative">
+                            <i class="fa-solid fa-microphone-lines text-5xl text-indigo-300"></i>
+                            <div class="absolute top-2 right-2 bg-white text-indigo-800 text-xs font-black px-3 py-1 rounded-full shadow">${isFull ? 'To\'lgan 🔥' : 'Ochiq ✅'}</div>
+                        </div>
+                        
+                        <div class="p-6 flex-1 flex flex-col">
+                            <h3 class="font-black text-xl text-gray-800 mb-2">${ev.title}</h3>
+                            <p class="text-sm text-gray-500 mb-4 flex-1">${ev.description || ''}</p>
+                            
+                            <div class="bg-gray-50 p-3 rounded-lg mb-4 text-sm font-bold text-gray-700 border"><i class="fa-regular fa-clock text-indigo-500 mr-2"></i> ${start}</div>
+
+                            <div class="mb-5">
+                                <div class="flex justify-between text-xs font-bold text-gray-500 mb-1"><span>Band: ${ev.bookedCount} ta</span><span>Jami: ${ev.capacity} ta</span></div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5"><div class="${progressColor} h-2.5 rounded-full" style="width: ${percent}%"></div></div>
+                            </div>
+
+                            <div class="flex flex-col gap-2 mt-auto">
+                                <div class="flex gap-2">
+                                    <button onclick="bookTicket('${ev._id}')" class="flex-1 ${isFull ? 'bg-orange-500 hover:bg-orange-600' : 'bg-indigo-600 hover:bg-indigo-700'} text-white font-bold py-3 rounded-xl shadow transition text-sm">
+                                        ${isFull ? '<i class="fa-solid fa-hourglass-half mr-1"></i> Kutish ro\'yxati' : '<i class="fa-solid fa-ticket mr-1"></i> Chipta olish'}
+                                    </button>
+                                    <button onclick="cancelTicket('${ev._id}')" class="bg-gray-200 text-gray-700 hover:bg-red-100 hover:text-red-600 font-bold px-4 py-3 rounded-xl shadow transition" title="Bekor qilish"><i class="fa-solid fa-ban"></i></button>
+                                </div>
+                                <button onclick="openUpdateModal('${ev._id}')" class="w-full bg-blue-50 text-blue-600 hover:bg-blue-100 font-bold py-2 rounded-xl text-xs transition"><i class="fa-solid fa-pen mr-1"></i> Chiptani tahrirlash</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // CHIPTA OLISH VA BEKOR QILISH
+        async function bookTicket(id) {
+            const res = await fetch(`/api/events/${id}/book`, { method: 'POST', headers });
+            const data = await res.json();
+            if (res.ok) { alert("🎉 " + data.message); fetchEvents(); } else alert("❌ " + data.message);
+        }
+        async function cancelTicket(id) {
+            if(confirm("Chiptani bekor qilamizmi?")) {
+                const res = await fetch(`/api/events/${id}/cancel`, { method: 'POST', headers });
+                const data = await res.json();
+                if (res.ok) { alert("✅ " + data.message); fetchEvents(); } else alert("❌ " + data.message);
+            }
+        }
+
+        // CHIPTANI TAHRIRLASH
+        function openUpdateModal(eventId) {
+            document.getElementById('updateEventId').value = eventId;
+            document.getElementById('updateBookingModal').classList.remove('hidden');
+        }
+        document.getElementById('updateBookingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const eventId = document.getElementById('updateEventId').value;
+            const data = { guestName: document.getElementById('guestName').value, guestEmail: document.getElementById('guestEmail').value };
+            
+            const res = await fetch(`/api/events/${eventId}/booking`, { method: 'PATCH', headers, body: JSON.stringify(data) });
+            const result = await res.json();
+            
+            if (res.ok) { alert("✅ " + result.message); closeModal('updateBookingModal'); } 
+            else alert("❌ Xatolik: " + result.message);
+        });
+
+        // ADMIN: QATNASHCHILAR RO'YXATINI KO'RISH
+        async function viewAttendees(eventId) {
+            const res = await fetch(`/api/events/${eventId}/attendees`, { headers });
+            const data = await res.json();
+            
+            if (!res.ok) return alert("❌ Sizda admin huquqi yo'q!");
+
+            const listBox = document.getElementById('attendeesList');
+            listBox.innerHTML = '';
+            
+            if (data.length === 0) listBox.innerHTML = "<p class='text-gray-500 text-center'>Hozircha hech kim yozilmagan.</p>";
+            else {
+                data.forEach((b, index) => {
+                    const name = b.guestName || (b.userId.firstName ? b.userId.firstName + ' ' + (b.userId.lastName || '') : 'Ismi yo\'q');
+                    const phone = b.userId.phoneNumber;
+                    const email = b.guestEmail || 'Email kiritilmagan';
+                    
+                    listBox.innerHTML += `
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center group hover:bg-gray-100 transition">
+                            <div>
+                                <p class="font-bold text-gray-800">${index + 1}. ${name}</p>
+                                <p class="text-xs text-gray-500"><i class="fa-solid fa-phone mr-1"></i>${phone} | <i class="fa-solid fa-envelope mr-1"></i>${email}</p>
+                            </div>
+                            <button onclick="removeAttendeeFromList('${b._id}', '${eventId}')" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-3 rounded-lg transition" title="Ro'yxatdan o'chirish">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+            }
+            document.getElementById('attendeesModal').classList.remove('hidden');
+        }
+
+        // YANGI FUNKSIYA: Odamni o'chirish
+        async function removeAttendeeFromList(bookingId, eventId) {
+            if(!confirm("Rostdan ham bu qatnashchini ro'yxatdan o'chiramizmi?\nAgar kutish ro'yxatida odam bo'lsa, o'rniga avtomat kiritiladi!")) return;
+            
+            const res = await fetch(`/api/events/booking/${bookingId}`, { method: 'DELETE', headers });
+            const data = await res.json();
+            
+            if (res.ok) {
+                alert("✅ " + data.message);
+                viewAttendees(eventId); // Ro'yxatni orqada yangilab qo'yamiz
+                fetchEvents(); // Asosiy afishadagi raqamlarni (progress) yangilaymiz
+            } else {
+                alert("❌ Xatolik: " + data.message);
+            }
+        }
+
+        // YANGILIK: ADMIN TADBIRNI BUTUNLAY O'CHIRISHI
+        async function deleteEvent(eventId) {
+            if(!confirm("Rostdan ham bu tadbirni butunlay o'chiramizmi?\nBarcha yozilgan qatnashchilar va chiptalar ham o'chib ketadi!")) return;
+            
+            const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE', headers });
+            const data = await res.json();
+            
+            if (res.ok) {
+                alert("✅ " + data.message);
+                fetchEvents(); // Ekranni yangilab qo'yamiz
+            } else {
+                alert("❌ Xatolik: " + data.message);
+            }
+        }
+
+        // TADBIR YARATISH
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                title: document.getElementById('evTitle').value,
+                description: document.getElementById('evDesc').value,
+                startTime: document.getElementById('evStart').value,
+                endTime: document.getElementById('evEnd').value,
+                capacity: document.getElementById('evCapacity').value
+            };
+            const res = await fetch('/api/events', { method: 'POST', headers, body: JSON.stringify(data) });
+            if (res.ok) { alert("✅ Yaratildi!"); closeModal('adminModal'); fetchEvents(); } else alert("❌ Xatolik!");
+        });
+
+        function openAdminModal() { document.getElementById('adminModal').classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    </script>
+</body>
+</html>

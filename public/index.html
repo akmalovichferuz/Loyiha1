@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loyihalar tizimi</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md transition-all duration-500">
+        
+        <div id="loginView">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Tizimga kirish</h2>
+            <form id="loginForm" class="space-y-4">
+                <input type="tel" id="loginPhone" value="+998" placeholder="+998901234567" class="w-full p-3 border rounded-lg" required>
+                <input type="password" id="loginPassword" placeholder="Parol" class="w-full p-3 border rounded-lg" required>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700">Kirish</button>
+            </form>
+            <div class="mt-4 flex justify-between text-sm text-blue-600">
+                <button onclick="switchView('registerView')">Ro'yxatdan o'tish</button>
+                <button onclick="switchView('forgotView')">Parolni unutdim</button>
+            </div>
+        </div>
+
+        <div id="registerView" class="hidden">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Ro'yxatdan o'tish</h2>
+            <form id="regForm" class="space-y-4">
+                <input type="text" id="regFirst" placeholder="Ism" class="w-full p-3 border rounded-lg" required>
+                <input type="text" id="regLast" placeholder="Familiya" class="w-full p-3 border rounded-lg" required>
+                <input type="tel" id="regPhone" value="+998" placeholder="+998901234567" class="w-full p-3 border rounded-lg" required>
+                <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700">Kodni olish</button>
+            </form>
+            <button onclick="switchView('loginView')" class="w-full mt-4 text-sm text-gray-500">Orqaga qaytish</button>
+        </div>
+
+        <div id="forgotView" class="hidden">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Parolni tiklash</h2>
+            <p class="text-sm text-gray-500 mb-4 text-center">Raqamingizni kiriting, botga kod yuboramiz.</p>
+            <form id="forgotForm" class="space-y-4">
+                <input type="tel" id="forgotPhone" value="+998" placeholder="+998901234567" class="w-full p-3 border rounded-lg" required>
+                <button type="submit" class="w-full bg-yellow-500 text-white font-bold py-3 rounded-lg hover:bg-yellow-600">Kodni olish</button>
+            </form>
+            <button onclick="switchView('loginView')" class="w-full mt-4 text-sm text-gray-500">Orqaga qaytish</button>
+        </div>
+
+        <div id="otpView" class="hidden">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Kodni tasdiqlash</h2>
+            <form id="otpForm" class="space-y-4">
+                <input type="text" id="otpCode" placeholder="- - - - -" maxlength="5" class="w-full p-3 border rounded-lg text-center text-2xl font-bold" required>
+                <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700">Tasdiqlash</button>
+            </form>
+        </div>
+
+        <div id="passwordView" class="hidden">
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Yangi parol o'rnatish</h2>
+            <form id="passwordForm" class="space-y-4">
+                <input type="tel" id="lockedPhone" disabled class="w-full p-3 border rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed">
+                <input type="password" id="newPass" placeholder="Yangi parol" class="w-full p-3 border rounded-lg" required>
+                <input type="password" id="confirmPass" placeholder="Parolni takrorlang" class="w-full p-3 border rounded-lg" required>
+                <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700">Saqlash va Kirish</button>
+            </form>
+        </div>
+
+        <div id="dashboardView" class="hidden text-center">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Xush kelibsiz! 🎉</h2>
+            <p class="text-gray-500 mb-8">Kerakli loyihani tanlang:</p>
+            <div class="space-y-4">
+                <button onclick="window.location.href='/notes.html'" class="w-full bg-yellow-500 text-white font-bold py-4 px-4 rounded-xl shadow-md hover:bg-yellow-600 text-lg">✏️ Notes App</button>
+                <button onclick="window.location.href='/events.html'" class="w-full bg-indigo-600 text-white font-bold py-4 px-4 rounded-xl shadow-md hover:bg-indigo-700 text-lg">🗓 Event Booking</button>
+            </div>
+            <button onclick="logout()" class="mt-6 text-red-500 text-sm font-bold bg-red-50 px-4 py-2 rounded-lg">Tizimdan chiqish</button>
+        </div>
+
+    </div>
+
+    <script>
+        let currentPhone = "";
+
+        // 1. SAHIFA YUKLANGANDA XAVFSIZLIK, HISTORY VA TELEGRAM WEB APP TEKSHIRUVI
+        document.addEventListener('DOMContentLoaded', async () => {
+            const tg = window.Telegram.WebApp;
+            tg.expand(); // Telegramda ochilsa oynani to'liq ekranga yoyish
+
+            // YANGILIK: Agar foydalanuvchi botdagi Web App tugmasidan kirgan bo'lsa
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const tgUser = tg.initDataUnsafe.user;
+                const response = await postData('/api/auth/webapp-login', { telegramId: tgUser.id });
+
+                if (response.ok) {
+                    const { status, phoneNumber } = response.data;
+                    currentPhone = phoneNumber;
+                    localStorage.setItem('userPhone', phoneNumber);
+                    sessionStorage.setItem('isLoggedIn', 'true');
+
+                    if (status === 'success') {
+                        // Allaqachon paroli bor, to'g'ri menyuga yuboramiz
+                        switchView('dashboardView', false);
+                        history.replaceState({ view: 'dashboardView' }, "", "#dashboard");
+                    } else if (status === 'needs_password') {
+                        // Paroli yo'q, yangi parol yaratishini so'raymiz (OTP va ro'yxatdan o'tishni atlab o'tadi!)
+                        document.getElementById('lockedPhone').value = phoneNumber;
+                        switchView('passwordView', false);
+                        history.replaceState({ view: 'passwordView' }, "", "#password");
+                    }
+                    return; // Brauzer tekshiruvini shu yerda to'xtatamiz
+                }
+            }
+
+            // QOLGAN BRAUZER MANTIG'I (Botdan kirmaganlar uchun)
+            const savedPhone = localStorage.getItem('userPhone');
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn'); 
+
+            if (savedPhone) {
+                document.getElementById('loginPhone').value = savedPhone; 
+            }
+
+            if (savedPhone && isLoggedIn) {
+                switchView('dashboardView', false);
+                history.replaceState({ view: 'dashboardView' }, "", "#dashboard");
+            } else {
+                switchView('loginView', false);
+                history.replaceState({ view: 'loginView' }, "", "#login");
+            }
+        });
+
+        // 2. ORQAGA TUGMASINI (NAZAD) QO'LGA OLISH
+        window.addEventListener('popstate', (e) => {
+            if (e.state && e.state.view) {
+                switchView(e.state.view, false); // URL tarixiga qarab oynani chizish
+            } else {
+                switchView('loginView', false);
+            }
+        });
+
+        // 3. OYNALARNI ALMASHTIRISH (URL va Tarix bilan birga)
+        function switchView(viewId, pushHistory = true) {
+            ['loginView', 'registerView', 'forgotView', 'otpView', 'passwordView', 'dashboardView'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+
+            if (pushHistory) {
+                let urlHash = viewId.replace('View', '');
+                history.pushState({ view: viewId }, "", `#${urlHash}`);
+            }
+        }
+
+        async function postData(url, data) {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            return { ok: res.ok, data: await res.json() };
+        }
+
+        // 1. LOGIN
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('loginPhone').value;
+            const password = document.getElementById('loginPassword').value;
+            const response = await postData('/api/auth/login', { phoneNumber: phone, password });
+    
+            if (response.ok) {
+                localStorage.setItem('userPhone', phone);
+                sessionStorage.setItem('isLoggedIn', 'true'); // MUHIM: Faol sessiya yaratish
+                switchView('dashboardView');
+            } else {
+                alert(response.data.message);
+            }
+        });
+
+        // 2. REGISTER
+        document.getElementById('regForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            currentPhone = document.getElementById('regPhone').value;
+            const firstName = document.getElementById('regFirst').value;
+            const lastName = document.getElementById('regLast').value;
+            const response = await postData('/api/auth/register', { firstName, lastName, phoneNumber: currentPhone });
+            
+            if (response.ok) switchView('otpView');
+            else alert(response.data.message);
+        });
+
+        // 3. FORGOT PASSWORD
+        document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            currentPhone = document.getElementById('forgotPhone').value;
+            const response = await postData('/api/auth/forgot-password', { phoneNumber: currentPhone });
+            
+            if (response.ok) switchView('otpView');
+            else alert(response.data.message);
+        });
+
+        // 4. KODNI TASDIQLASH (OTP)
+        document.getElementById('otpForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const otpCode = document.getElementById('otpCode').value;
+            const response = await postData('/api/auth/verify', { phoneNumber: currentPhone, otpCode });
+            
+            if (response.ok) {
+                document.getElementById('lockedPhone').value = currentPhone;
+                switchView('passwordView');
+            } else {
+                alert(response.data.message);
+            }
+        });
+
+        // 5. PAROL O'RNATISH
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPass = document.getElementById('newPass').value;
+            const confirmPass = document.getElementById('confirmPass').value;
+
+            if (newPass !== confirmPass) return alert("Parollar bir xil emas!");
+
+            const response = await postData('/api/auth/set-password', { phoneNumber: currentPhone, password: newPass });
+            
+            if (response.ok) {
+                alert("Parolingiz saqlandi!");
+                localStorage.setItem('userPhone', currentPhone);
+                sessionStorage.setItem('isLoggedIn', 'true'); // Faol sessiya yaratish
+                switchView('dashboardView');
+            } else {
+                alert(response.data.message);
+            }
+        });
+
+        // CHIQISH (Sessiyani tozalash)
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn'); // Sessiya o'chiriladi
+            switchView('loginView');
+            document.getElementById('loginPassword').value = ''; // Parol xonasi tozalanadi
+        }
+    </script>
+</body>
+</html>
