@@ -66,7 +66,7 @@ const verifyOTP = async (req, res) => {
     user.otpCode = null; 
     await user.save();
 
-    res.status(200).json({ success: true, message: "Tasdiqlandi!" });
+    res.status(200).json({ success: true, message: "Muofaqiyatli Tasdiqlandi!" });
   } catch (error) {
     res.status(500).json({ message: "Server xatosi." });
   }
