@@ -9,8 +9,6 @@ const userSchema = new mongoose.Schema({
   otpCode: { type: String },
   otpExpires: { type: Date },
   isVerified: { type: Boolean, default: false },
-  
-  // YANGILIK: Admin ekanligini tasdiqlovchi belgi
   isAdmin: { type: Boolean, default: false } 
 }, { timestamps: true });
 

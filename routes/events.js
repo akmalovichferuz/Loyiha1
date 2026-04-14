@@ -18,9 +18,7 @@ router.post('/:id/book', bookEvent);
 router.post('/:id/cancel', cancelBooking);
 router.patch('/:id/booking', updateBooking);
 router.get('/:id/attendees', getAttendees);
-
-// Admin funksiyalari
-router.delete('/booking/:bookingId', removeAttendee); // Qatnashchini o'chirish
-router.delete('/:id', deleteEvent);                   // Butun tadbirni o'chirish
+router.delete('/booking/:bookingId', removeAttendee); 
+router.delete('/:id', deleteEvent);                   
 
 module.exports = router;

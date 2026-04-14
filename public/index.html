@@ -78,12 +78,12 @@
     <script>
         let currentPhone = "";
 
-        // 1. SAHIFA YUKLANGANDA XAVFSIZLIK, HISTORY VA TELEGRAM WEB APP TEKSHIRUVI
+        
         document.addEventListener('DOMContentLoaded', async () => {
             const tg = window.Telegram.WebApp;
-            tg.expand(); // Telegramda ochilsa oynani to'liq ekranga yoyish
+            tg.expand(); //
 
-            // YANGILIK: Agar foydalanuvchi botdagi Web App tugmasidan kirgan bo'lsa
+           
             if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
                 const tgUser = tg.initDataUnsafe.user;
                 const response = await postData('/api/auth/webapp-login', { telegramId: tgUser.id });

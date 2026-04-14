@@ -129,11 +129,9 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.BackButton.show(); // Yuqorida Telegramning o'zini orqaga tugmasini ham chiqaradi
-
-        // Telefonning "Nazad" tugmasi bosilganda
+        tg.BackButton.show(); 
         tg.BackButton.onClick(() => {
-            window.location.href = '/'; // Dasturdan chiqib ketmay, Asosiy menyuga (index.html) qaytaradi!
+            window.location.href = '/'; 
         });
         const phone = localStorage.getItem('userPhone');
         if (!phone) window.location.href = '/';
@@ -150,13 +148,13 @@
         document.addEventListener('DOMContentLoaded', fetchNotes);
         document.getElementById('searchInput').addEventListener('input', (e) => fetchNotes(e.target.value));
 
-        // YANGILIK: Yon panelni ochib/yopish funksiyasi
+        
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('-translate-x-full');
             document.getElementById('sidebarOverlay').classList.toggle('hidden');
         }
 
-        // YANGILIK: Mobilda biror menyu tanlansa avtomat panelni yopish
+        
         function closeSidebarOnMobile() {
             if (window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');

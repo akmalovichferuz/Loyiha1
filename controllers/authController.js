@@ -1,11 +1,7 @@
 const User = require('../models/User');
 const { bot, tempUsers } = require('../bot/bot');
-const bcrypt = require('bcryptjs'); // Parolni shifrlash uchun
-
-// Yordamchi funksiya: 5 xonali kod yaratish
+const bcrypt = require('bcryptjs'); 
 const generateOTP = () => Math.floor(10000 + Math.random() * 90000).toString();
-
-// 1. RO'YXATDAN O'TISH (KOD YUBORISH)
 const registerUser = async (req, res) => {
   try {
     const { firstName, lastName, phoneNumber } = req.body;
@@ -35,7 +31,7 @@ const registerUser = async (req, res) => {
     user.lastName = lastName;
     user.otpCode = otp;
     user.otpExpires = new Date(Date.now() + 3 * 60 * 1000);
-    user.isVerified = false; // Yangi ro'yxatdan o'tayotganda hali tasdiqlanmagan
+    user.isVerified = false; 
     await user.save();
 
     await bot.telegram.sendMessage(
@@ -51,7 +47,6 @@ const registerUser = async (req, res) => {
   }
 };
 
-// 2. KODNI TASDIQLASH (Ham Ro'yxatdan o'tish, ham Parol tiklash uchun)
 const verifyOTP = async (req, res) => {
   try {
     const { phoneNumber, otpCode } = req.body;
@@ -72,7 +67,7 @@ const verifyOTP = async (req, res) => {
   }
 };
 
-// 3. PAROL O'RNATISH (Yangi foydalanuvchi yoki tiklash)
+
 const setPassword = async (req, res) => {
   try {
     const { phoneNumber, password } = req.body;
@@ -82,7 +77,7 @@ const setPassword = async (req, res) => {
     if (!user) return res.status(404).json({ message: "Foydalanuvchi topilmadi." });
     if (!user.isVerified) return res.status(400).json({ message: "Avval kodni tasdiqlang!" });
 
-    // Parolni shifrlash
+ 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
     await user.save();
@@ -99,7 +94,6 @@ const setPassword = async (req, res) => {
   }
 };
 
-// 4. LOGIN (Tizimga kirish)
 const loginUser = async (req, res) => {
   try {
     const { phoneNumber, password } = req.body;
@@ -117,7 +111,6 @@ const loginUser = async (req, res) => {
   }
 };
 
-// 5. PAROLNI UNUTDIM (Faqat kod yuboradi)
 const forgotPassword = async (req, res) => {
   try {
     const { phoneNumber } = req.body;
@@ -129,7 +122,7 @@ const forgotPassword = async (req, res) => {
     const otp = generateOTP();
     user.otpCode = otp;
     user.otpExpires = new Date(Date.now() + 3 * 60 * 1000);
-    user.isVerified = false; // MUHIM: Parolni tiklayotganda tasdiqni qayta so'rash uchun
+    user.isVerified = false; 
     await user.save();
 
     await bot.telegram.sendMessage(user.telegramChatId, `🔄 Parolni tiklash kodingiz: *${otp}*`, { parse_mode: 'Markdown' });
@@ -139,7 +132,6 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-// 6. TELEGRAM WEB APP ORQALI AVTOMAT KIRISH
 const telegramWebAppLogin = async (req, res) => {
   try {
     const { telegramId } = req.body;
@@ -161,8 +153,6 @@ const telegramWebAppLogin = async (req, res) => {
     res.status(500).json({ message: "Server xatosi" });
   }
 };
-
-// Barcha funksiyalarni eksport qilish
 module.exports = { 
   registerUser, 
   verifyOTP, 

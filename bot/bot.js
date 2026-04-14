@@ -1,33 +1,24 @@
 const { Telegraf, Markup } = require('telegraf');
 const User = require('../models/User');
 const Note = require('../models/Note');
-
 const bot = new Telegraf(process.env.BOT_TOKEN);
-
-// Vaqtincha raqamlarni saqlash uchun obyekt (authController ga ham kerak bo'ladi)
 const tempUsers = {}; 
-
-// 1. START buyrug'i (Aqlli tekshiruv bilan)
 bot.start(async (ctx) => {
   const chatId = ctx.chat.id;
   const firstName = ctx.from.first_name || "Hurmatli foydalanuvchi";
 
   try {
-    // 🌟 YANGILIK: Avval bu odam bazada bor-yo'qligini tekshiramiz
     const existingUser = await User.findOne({ telegramChatId: chatId });
 
     if (existingUser) {
-      // Tizimda bor foydalanuvchi uchun javob:
       return ctx.reply(
         `Assalomu alaykum yana bir bor!*${firstName}*! 👋\n\nSiz tizimimizdan allaqachon muvaffaqiyatli ro'yxatdan o'tgansiz va profilingiz botga ulangan.\n\n🌐 Iltimos, barcha amallarni (yangi zametkalar yozish, tadbirlarga chipta olish) sayt orqali bajaring. Bot orqali esa faqat muhim bildirishnomalar va eslatmalarni qabul qilib olasiz!`,
         {
           parse_mode: 'Markdown',
-          reply_markup: { remove_keyboard: true } // Pastdagi kontakt tugmasini olib tashlaydi
+          reply_markup: { remove_keyboard: true } 
         }
       );
     }
-
-    // Tizimda yo'q (yangi) foydalanuvchi uchun javob:
     ctx.reply(
       `Assalomu alaykum, *${firstName}*!\n*Zametkalar va Tadbirlar* rasmiy botiga xush kelibsiz.\n\nBu bot orqali siz o'z zametkalaringiz bo'yicha muhim eslatmalarni va tadbirlar uchun elektron chiptalarni qabul qilib olasiz.\n\n⚠️ *Tizimdan to'liq foydalanish uchun:*
 Pastdagi tugma orqali o'z profilingizni (telefon raqamingizni) botga ulang.`,
@@ -48,7 +39,7 @@ Pastdagi tugma orqali o'z profilingizni (telefon raqamingizni) botga ulang.`,
   }
 });
 
-// 2. Kontakt yuborilganda (Yagona chiroyli xabar bilan)
+
 bot.on('contact', async (ctx) => {
   const phone = ctx.message.contact.phone_number;
   const chatId = ctx.chat.id;
@@ -67,12 +58,11 @@ bot.on('contact', async (ctx) => {
     await user.save();
   }
 
-  // 1-QADAM: Eski tugmani yig'ishtirish uchun "ayyorona" usul
-  // Kichkina xabar jo'natib klaviaturani tozalaymiz va darhol xabarni o'chirib tashlaymiz
+  
   const tempMsg = await ctx.reply("⏳", { reply_markup: { remove_keyboard: true } });
   await ctx.deleteMessage(tempMsg.message_id);
 
-  // 2-QADAM: Siz xohlagan yagona, chiroyli xabar va unga yopishtirilgan KENG tugma
+  
   const webAppUrl = process.env.WEBAPP_URL;
   
   await ctx.reply(
@@ -81,7 +71,7 @@ bot.on('contact', async (ctx) => {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
-          // Tugma butun xabar kengligida chiqishi uchun bitta qatorga bitta tugma qo'yamiz
+          
           [{ text: "🌐 Bizning veb-sayt", web_app: { url: webAppUrl } }]
         ]
       }
@@ -89,12 +79,12 @@ bot.on('contact', async (ctx) => {
   );
 });
 
-// 3. "Bajardim" tugmasi bosilganda ishlaydigan mantiq
+
 bot.action(/^done_(.+)$/, async (ctx) => {
   try {
-    const noteId = ctx.match[1]; // Tugmadagi ID ni ajratib olamiz
+    const noteId = ctx.match[1]; 
     
-    // Bazadan zametkani topib, yangilaymiz
+    
     const note = await Note.findById(noteId);
     
     if (!note) {
@@ -105,11 +95,10 @@ bot.action(/^done_(.+)$/, async (ctx) => {
       return ctx.answerCbQuery("ℹ️ Bu vazifa allaqachon bajarilgan!", { show_alert: true });
     }
 
-    // Vazifani bajarilgan deb belgilaymiz
+    
     note.isCompleted = true;
     await note.save();
 
-    // Kreativ tasdiqlash xabari
     await ctx.editMessageText(
       `🏆 *Ajoyib natija!* 🏔\n\nSiz ~${note.title}~ vazifasini muvaffaqiyatli yakunladingiz.\n\n_🌐 Saytda bu vazifa statusi bajarildiga o'zgartirildi. Faqat olg'a!_ 🚀`,
       { parse_mode: 'Markdown' }
@@ -120,13 +109,11 @@ bot.action(/^done_(.+)$/, async (ctx) => {
     ctx.answerCbQuery("❌ Xatolik yuz berdi.", { show_alert: true });
   }
 });
-// ... oldingi bot.on, bot.action kodlari ...
 
-// YANGILIK: Bot ishga tushganda doimiy Menu tugmasini .env dagi URL ga qarab yangilash
 bot.telegram.setChatMenuButton({
   menu_button: {
     type: 'web_app',
-    text: 'Saytga kirish', // Tugmada nima yozuv chiqishi (xohlasangiz 'Open' yoki 'Kabinet' qiling)
+    text: 'Saytga kirish', 
     web_app: { url: process.env.WEBAPP_URL }
   }
 }).then(() => {
@@ -135,7 +122,6 @@ bot.telegram.setChatMenuButton({
   console.error("❌ Menu tugmasini o'rnatishda xatolik (URL https bilan boshlanganiga ishonch hosil qiling):", err.message);
 });
 
-// Modulni eksport qilish (bu doim eng oxirida turishi kerak)
+
 module.exports = { bot, tempUsers };
-// Modulni eksport qilish va tempUsers ni ham ulashish (authController uchun)
 module.exports = { bot, tempUsers };

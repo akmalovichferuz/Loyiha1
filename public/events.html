@@ -83,11 +83,9 @@
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.BackButton.show(); // Yuqorida Telegramning o'zini orqaga tugmasini ham chiqaradi
-
-        // Telefonning "Nazad" tugmasi bosilganda
+        tg.BackButton.show(); 
         tg.BackButton.onClick(() => {
-            window.location.href = '/'; // Dasturdan chiqib ketmay, Asosiy menyuga (index.html) qaytaradi!
+            window.location.href = '/'; 
         });
         const phone = localStorage.getItem('userPhone');
         if (!phone) window.location.href = '/';
@@ -95,7 +93,7 @@
 
         document.addEventListener('DOMContentLoaded', fetchEvents);
 
-        // Qidiruv va Filter Hodisalari
+        
         document.getElementById('searchInput').addEventListener('input', fetchEvents);
         document.getElementById('dateFilter').addEventListener('change', fetchEvents);
 
@@ -172,7 +170,7 @@
             });
         }
 
-        // CHIPTA OLISH VA BEKOR QILISH
+        
         async function bookTicket(id) {
             const res = await fetch(`/api/events/${id}/book`, { method: 'POST', headers });
             const data = await res.json();
@@ -186,7 +184,7 @@
             }
         }
 
-        // CHIPTANI TAHRIRLASH
+        
         function openUpdateModal(eventId) {
             document.getElementById('updateEventId').value = eventId;
             document.getElementById('updateBookingModal').classList.remove('hidden');
@@ -203,7 +201,7 @@
             else alert("❌ Xatolik: " + result.message);
         });
 
-        // ADMIN: QATNASHCHILAR RO'YXATINI KO'RISH
+        
         async function viewAttendees(eventId) {
             const res = await fetch(`/api/events/${eventId}/attendees`, { headers });
             const data = await res.json();
@@ -236,7 +234,7 @@
             document.getElementById('attendeesModal').classList.remove('hidden');
         }
 
-        // YANGI FUNKSIYA: Odamni o'chirish
+        
         async function removeAttendeeFromList(bookingId, eventId) {
             if(!confirm("Rostdan ham bu qatnashchini ro'yxatdan o'chiramizmi?\nAgar kutish ro'yxatida odam bo'lsa, o'rniga avtomat kiritiladi!")) return;
             
@@ -245,14 +243,14 @@
             
             if (res.ok) {
                 alert("✅ " + data.message);
-                viewAttendees(eventId); // Ro'yxatni orqada yangilab qo'yamiz
-                fetchEvents(); // Asosiy afishadagi raqamlarni (progress) yangilaymiz
+                viewAttendees(eventId); 
+                fetchEvents(); 
             } else {
                 alert("❌ Xatolik: " + data.message);
             }
         }
 
-        // YANGILIK: ADMIN TADBIRNI BUTUNLAY O'CHIRISHI
+        
         async function deleteEvent(eventId) {
             if(!confirm("Rostdan ham bu tadbirni butunlay o'chiramizmi?\nBarcha yozilgan qatnashchilar va chiptalar ham o'chib ketadi!")) return;
             
@@ -261,13 +259,13 @@
             
             if (res.ok) {
                 alert("✅ " + data.message);
-                fetchEvents(); // Ekranni yangilab qo'yamiz
+                fetchEvents(); 
             } else {
                 alert("❌ Xatolik: " + data.message);
             }
         }
 
-        // TADBIR YARATISH
+        
         document.getElementById('eventForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const data = {

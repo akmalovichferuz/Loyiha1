@@ -2,15 +2,12 @@ const Event = require('../models/Event');
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 const { bot } = require('../bot/bot');
-
-// Yordamchi: So'rov yuborayotgan odamni aniqlash
 const getUserByPhone = async (req) => {
   const phone = req.headers['user-phone'];
   if (!phone) throw new Error("Foydalanuvchi tasdiqlanmadi!");
   return await User.findOne({ phoneNumber: phone });
 };
 
-// 1. ADMIN: Yangi tadbir yaratish
 const createEvent = async (req, res) => {
   try {
     const user = await getUserByPhone(req);
@@ -22,7 +19,6 @@ const createEvent = async (req, res) => {
   } catch (error) { res.status(400).json({ error: error.message }); }
 };
 
-// 2. HAMMA UCHUN: Tadbirlarni ko'rish
 const getEvents = async (req, res) => {
   try {
     const { search, date } = req.query;
@@ -43,7 +39,7 @@ const getEvents = async (req, res) => {
   } catch (error) { res.status(400).json({ error: error.message }); }
 };
 
-// 3. MIJOZ: Joy band qilish
+
 const bookEvent = async (req, res) => {
   try {
     const user = await getUserByPhone(req);
@@ -85,7 +81,7 @@ const bookEvent = async (req, res) => {
   } catch (error) { res.status(400).json({ error: error.message }); }
 };
 
-// 4. MIJOZ: Bekor qilish
+
 const cancelBooking = async (req, res) => {
   try {
     const user = await getUserByPhone(req);
@@ -111,7 +107,7 @@ const cancelBooking = async (req, res) => {
   } catch (error) { res.status(400).json({ error: error.message }); }
 };
 
-// 5. MIJOZ: Chiptani tahrirlash
+
 const updateBooking = async (req, res) => {
   try {
     const user = await getUserByPhone(req);
@@ -124,7 +120,7 @@ const updateBooking = async (req, res) => {
   } catch (error) { res.status(400).json({ error: error.message }); }
 };
 
-// 6. ADMIN: Qatnashchilar ro'yxati
+
 const getAttendees = async (req, res) => {
   try {
     const user = await getUserByPhone(req);
@@ -134,7 +130,7 @@ const getAttendees = async (req, res) => {
   } catch (error) { res.status(400).json({ error: error.message }); }
 };
 
-// 7. ADMIN: Qatnashchini o'chirish
+
 const removeAttendee = async (req, res) => {
     try {
       const adminUser = await getUserByPhone(req);
@@ -163,7 +159,7 @@ const removeAttendee = async (req, res) => {
     } catch (error) { res.status(400).json({ error: error.message }); }
 };
 
-// 8. ADMIN: Tadbirni butunlay o'chirish (YANGI FUNKSIYA)
+
 const deleteEvent = async (req, res) => {
   try {
     const adminUser = await getUserByPhone(req);
@@ -180,5 +176,5 @@ const deleteEvent = async (req, res) => {
   } catch (error) { res.status(400).json({ error: error.message }); }
 };
   
-// Barcha funksiyalarni eksport qilish (8 ta funksiya)
+
 module.exports = { createEvent, getEvents, bookEvent, cancelBooking, updateBooking, getAttendees, removeAttendee, deleteEvent };
