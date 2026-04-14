@@ -7,13 +7,11 @@ const {bot} = require('../bot/bot');
 
 // Har 1 daqiqada ishga tushadigan funksiya
 cron.schedule('* * * * *', async () => {
+  const now = new Date();
+  console.log("--- [CRON] Tekshiruv boshlandi ---");
+  console.log("Hozirgi vaqt (UTC):", now.toISOString());
+
   try {
-    const now = new Date();
-    
-  console.log("--- CRON ISHLADI ---");
-  console.log("Serverning hozirgi vaqti:", now.toLocaleString());
-    
-    // Vaqti kelgan, hali eslatilmagan va bajarilmagan zametkalarni qidiramiz
     const dueNotes = await Note.find({
       remindAt: { $lte: now },
       isReminded: false,
@@ -21,29 +19,27 @@ cron.schedule('* * * * *', async () => {
       isTrashed: false 
     }).populate('userId'); 
 
+    console.log(`Topilgan eslatmalar soni: ${dueNotes.length}`);
+
     for (let note of dueNotes) {
       if (note.userId && note.userId.telegramChatId) {
+        console.log(`Xabar yuborilmoqda: ${note.userId.telegramChatId} ga`);
         
-        // Botga kreativ xabar va chiroyli tugma yuboramiz
         await bot.telegram.sendMessage(
             note.userId.telegramChatId,
-            `⏰ *Vaqt keldi, Qahramon!* 🦸‍♂️\n\nSiz rejalashtirgan muhim vazifa vaqti bo'ldi. O'z ustingizda ishlashda davom eting!\n\n📌 *Mavzu:* ${note.title}\n📝 *Tafsilot:* ${note.content || 'Shunchaki harakatni boshlang!'}\n\n_Vazifani qoyilmaqom qilib bajarganingizdan so'ng, pastdagi tugmani bosishni unutmang!_ `,
-            {
-              parse_mode: 'Markdown',
-              reply_markup: {
-                inline_keyboard: [
-                  [{ text: "✅ Muvaffaqiyatli bajardim!", callback_data: `done_${note._id}` }]
-                ]
-              }
-            }
-          );
+            `⏰ *Vaqt keldi!* \n\n📌 *Mavzu:* ${note.title}`,
+            { parse_mode: 'Markdown' }
+        );
 
         note.isReminded = true;
         await note.save();
+        console.log(`✅ Xabar yuborildi va status yangilandi: ${note.title}`);
+      } else {
+        console.log(`⚠️ Xato: Note (${note._id}) uchun userId yoki chatId topilmadi!`);
       }
     }
   } catch (error) {
-    console.error("Cron Job xatosi:", error);
+    console.error("❌ Cron Job xatosi:", error.message);
   }
 });
 
