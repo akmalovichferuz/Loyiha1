@@ -8,11 +8,14 @@ const {bot} = require('../bot/bot');
 // Har 1 daqiqada ishga tushadigan funksiya
 cron.schedule('* * * * *', async () => {
   try {
+    // Server vaqtidan qat'i nazar hozirgi O'zbekiston vaqtini aniqlash
     const now = new Date();
-    
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const uzbTime = new Date(utcTime + (5 * 3600000)); // UTC+5
+
     // Vaqti kelgan, hali eslatilmagan va bajarilmagan zametkalarni qidiramiz
     const dueNotes = await Note.find({
-      remindAt: { $lte: now },
+      remindAt: { $lte: uzbTime }, 
       isReminded: false,
       isCompleted: false,
       isTrashed: false 
