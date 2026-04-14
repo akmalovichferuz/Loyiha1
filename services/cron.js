@@ -10,6 +10,9 @@ cron.schedule('* * * * *', async () => {
   try {
     const now = new Date();
     
+  console.log("--- CRON ISHLADI ---");
+  console.log("Serverning hozirgi vaqti:", now.toLocaleString());
+    
     // Vaqti kelgan, hali eslatilmagan va bajarilmagan zametkalarni qidiramiz
     const dueNotes = await Note.find({
       remindAt: { $lte: now },
